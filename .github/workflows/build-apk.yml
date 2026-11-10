@@ -2,9 +2,9 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "*" ]
   workflow_dispatch:
 
 jobs:
@@ -16,19 +16,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android SDK Licenses & Install SDK 36
+      - name: Ensure .env file exists for Secrets Plugin
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
+          if [ ! -f ".env" ]; then
+            cp .env.example .env || touch .env
+          fi
 
       - name: Generate debug.keystore if missing
         run: |
@@ -44,13 +42,169 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
 
-      - name: Setup Gradle
+      - name: Normalize Gradle & Version Catalog for Public Maven on GitHub Runner
+        run: |
+          cat > gradle/libs.versions.toml << 'EOF'
+          [versions]
+          agp = "8.7.3"
+          kotlin = "2.1.0"
+          googleDevtoolsKsp = "2.1.0-1.0.29"
+          coreKtx = "1.15.0"
+          junit = "4.13.2"
+          junitVersion = "1.2.1"
+          espressoCore = "3.6.1"
+          lifecycleRuntimeKtx = "2.8.7"
+          lifecycleViewmodelCompose = "2.8.7"
+          lifecycleRuntimeCompose = "2.8.7"
+          activityCompose = "1.9.3"
+          composeBom = "2024.10.01"
+          navigationCompose = "2.8.5"
+          roomRuntime = "2.6.1"
+          roomKtx = "2.6.1"
+          roomCompiler = "2.6.1"
+          kotlinxCoroutinesTest = "1.9.0"
+          core = "1.6.1"
+          runner = "1.6.2"
+          kotlinxCoroutinesAndroid = "1.9.0"
+          kotlinxCoroutinesCore = "1.9.0"
+          robolectric = "4.14.1"
+          secretsGradlePlugin = "2.0.1"
+
+          [libraries]
+          androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+          junit = { group = "junit", name = "junit", version.ref = "junit" }
+          androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+          androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+          androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+          androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+          androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+          androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+          androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+          androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+          androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+          androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+          androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+          androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+          androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+          androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+          androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomRuntime" }
+          androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+          androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+          kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+          androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+          androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+          androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+          androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+          androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+          kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
+          kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+          robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+
+          [plugins]
+          android-application = { id = "com.android.application", version.ref = "agp" }
+          kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+          kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+          google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "googleDevtoolsKsp" }
+          secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+          EOF
+
+          cat > build.gradle.kts << 'EOF'
+          plugins {
+            alias(libs.plugins.android.application) apply false
+            alias(libs.plugins.kotlin.android) apply false
+            alias(libs.plugins.kotlin.compose) apply false
+            alias(libs.plugins.google.devtools.ksp) apply false
+            alias(libs.plugins.secrets) apply false
+          }
+          EOF
+
+          cat > app/build.gradle.kts << 'EOF'
+          plugins {
+            alias(libs.plugins.android.application)
+            alias(libs.plugins.kotlin.android)
+            alias(libs.plugins.kotlin.compose)
+            alias(libs.plugins.google.devtools.ksp)
+            alias(libs.plugins.secrets)
+          }
+
+          android {
+            namespace = "com.example"
+            compileSdk = 35
+
+            defaultConfig {
+              applicationId = "com.aistudio.branchopspulse.vxqrmk"
+              minSdk = 24
+              targetSdk = 35
+              versionCode = 1
+              versionName = "1.0"
+              testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            }
+
+            signingConfigs {
+              create("debugConfig") {
+                storeFile = file("${rootDir}/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+              }
+            }
+
+            buildTypes {
+              debug {
+                signingConfig = signingConfigs.getByName("debugConfig")
+              }
+            }
+
+            compileOptions {
+              sourceCompatibility = JavaVersion.VERSION_17
+              targetCompatibility = JavaVersion.VERSION_17
+            }
+
+            kotlinOptions {
+              jvmTarget = "17"
+            }
+
+            buildFeatures {
+              compose = true
+              buildConfig = true
+            }
+          }
+
+          secrets {
+            propertiesFileName = ".env"
+            defaultPropertiesFileName = ".env.example"
+          }
+
+          dependencies {
+            implementation(platform(libs.androidx.compose.bom))
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.compose.material.icons.core)
+            implementation(libs.androidx.compose.material.icons.extended)
+            implementation(libs.androidx.compose.material3)
+            implementation(libs.androidx.compose.ui)
+            implementation(libs.androidx.compose.ui.graphics)
+            implementation(libs.androidx.compose.ui.tooling.preview)
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.lifecycle.runtime.ktx)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.room.ktx)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.kotlinx.coroutines.core)
+            debugImplementation(libs.androidx.compose.ui.test.manifest)
+            debugImplementation(libs.androidx.compose.ui.tooling)
+            "ksp"(libs.androidx.room.compiler)
+          }
+          EOF
+
+      - name: Setup Gradle 8.11.1
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '9.3.1'
+          gradle-version: '8.11.1'
 
       - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon
+        run: gradle :app:assembleDebug --no-daemon --no-configuration-cache
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
