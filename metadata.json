@@ -1,0 +1,6 @@
+{
+  "name": "BranchOps Pulse",
+  "description": "Branch Operations & WhatsApp Share Data Dashboard with a 31-day Daily Routine Tracker backed by Room Database.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

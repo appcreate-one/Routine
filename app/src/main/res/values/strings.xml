@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">BranchOps Pulse</string>
+    <string name="dashboard_title">BranchOps Pulse</string>
+    <string name="dashboard_subtitle">WhatsApp Share Hub &amp; 31-Day Branch Routine</string>
+    <string name="simulate_whatsapp_share">Simulate Share</string>
+    <string name="add_manual_share">Log Share</string>
+    <string name="section_whatsapp_title">Section A • WhatsApp Share Analytics</string>
+    <string name="section_routine_title">Section B • 31-Day Branch Routine Tracker</string>
+    <string name="stat_total_shares">Total Shared</string>
+    <string name="stat_links_shared">Links &amp; URLs</string>
+    <string name="stat_media_shared">Media &amp; Docs</string>
+    <string name="stat_today_routine">Today\'s Progress</string>
+    <string name="recent_shares_header">Recent Incoming WhatsApp Shares</string>
+    <string name="empty_shares_title">No WhatsApp Shares Captured Yet</string>
+    <string name="empty_shares_subtitle">Share any message, link, or media from WhatsApp via the Android Share Sheet to BranchOps Pulse, or tap \"Simulate Share\" to test instant ingestion.</string>
+    <string name="search_tasks_hint">Search 21 daily branch tasks…</string>
+    <string name="jump_to_today">Focus Today</string>
+    <string name="show_all_days">All 31 Days</string>
+    <string name="mark_today_complete">Complete Remaining Today</string>
+    <string name="reset_month_confirm">Reset Month</string>
+    <string name="clear_shares">Clear Shares</string>
+    <string name="task_column_header">Daily Branch Routine (21 Checkpoints)</string>
+    <string name="chart_section_title">Monthly Routine Performance Trend</string>
+    <string name="chart_section_subtitle">31-day completion percentage bar chart &amp; moving average trend (tap any bar to focus day)</string>
+    <string name="reminder_card_title">5:00 PM Daily Routine Alert</string>
+    <string name="reminder_card_subtitle">Automatically checks Room DB at 5:00 PM and notifies you if any of today\'s 21 tasks are still pending before 6:00 PM system closing.</string>
+    <string name="reminder_test_now">Test 5:00 PM Check</string>
+</resources>
