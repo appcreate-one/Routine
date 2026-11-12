@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BranchOps Pulse - Web Dashboard</title>
+  <style>
+    :root {
+      --navy-deep: #0B192C;
+      --navy-surface: #13243C;
+      --navy-card: #1A2F4B;
+      --navy-elevated: #223B5E;
+      --emerald-primary: #10B981;
+      --emerald-light: #34D399;
+      --amber-accent: #F59E0B;
+      --cyan-info: #06B6D4;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border-color: #2E4566;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--navy-deep);
+      color: var(--text-main);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header */
+    .header-card {
+      background: linear-gradient(135deg, #13243C 0%, #1A2F4B 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-info h1 {
+      font-size: 24px;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--emerald-light);
+      border: 1px solid var(--emerald-primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .header-info p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      background: var(--emerald-primary);
+      color: var(--navy-deep);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    /* KPI Metrics */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--navy-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .kpi-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .kpi-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: #FFF;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--emerald-light);
+      margin-top: 4px;
+    }
+
+    /* Chart Section */
+    .section-card {
+      background: var(--navy-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .bar-chart-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 160px;
+      padding-top: 20px;
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+
+    .bar-col {
+      flex: 1;
+      min-width: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      cursor: pointer;
+    }
+
+    .bar-fill {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      background: var(--emerald-primary);
+      transition: height 0.3s ease;
+      min-height: 4px;
+    }
+
+    .bar-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Grid Section */
+    .routine-grid-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border-color);
+      border-right: 1px solid rgba(46, 69, 102, 0.4);
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--navy-elevated);
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      background: var(--navy-surface);
+      z-index: 2;
+      width: 260px;
+      min-width: 260px;
+      max-width: 260px;
+      white-space: normal;
+      font-weight: 600;
+    }
+
+    th.sticky-col {
+      background: var(--navy-elevated);
+      z-index: 3;
+    }
+
+    .day-cell {
+      text-align: center;
+      width: 36px;
+      min-width: 36px;
+      cursor: pointer;
+    }
+
+    .check-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--navy-deep);
+      font-weight: bold;
+      user-select: none;
+    }
+
+    .check-box.checked {
+      background: var(--emerald-primary);
+      border-color: var(--emerald-primary);
+    }
+
+    /* WhatsApp Section */
+    .share-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .share-item {
+      background: var(--navy-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .share-type {
+      background: rgba(6, 182, 212, 0.2);
+      color: var(--cyan-info);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-info">
+        <h1>BranchOps Pulse <span class="badge">WEB &amp; ANDROID SYNC</span></h1>
+        <p>WhatsApp Share Receiver &amp; 31-Day Branch Operations Daily Routine Tracker</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" onclick="simulateShare()">+ Simulate WhatsApp Share</button>
+        <button class="btn btn-secondary" onclick="exportData()">Export JSON</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">TOTAL WHATSAPP SHARES</div>
+        <div class="kpi-val" id="totalSharesCount">4</div>
+        <div class="kpi-sub" id="shareSub">2 Links • 1 Text • 1 Media</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">TODAY'S PROGRESS (DAY 12)</div>
+        <div class="kpi-val" id="todayProgress">14 / 21</div>
+        <div class="kpi-sub">67% Checkpoints Completed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">5:00 PM ALERT STATUS</div>
+        <div class="kpi-val" style="color: var(--amber-accent);" id="alertStatus">ACTIVE</div>
+        <div class="kpi-sub">Checks at 17:00 Daily</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">MONTHLY AVG COMPLETION</div>
+        <div class="kpi-val" style="color: var(--emerald-light);" id="avgCompletion">78%</div>
+        <div class="kpi-sub">Target SLA: 85%</div>
+      </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">Monthly Routine Performance Trend (Days 1–31)</div>
+        <div style="font-size: 12px; color: var(--text-muted);">Click on any bar to jump to day</div>
+      </div>
+      <div class="bar-chart-container" id="barChart"></div>
+    </div>
+
+    <!-- Routine Grid -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">31-Day Branch Routine Tracker (21 Tasks)</div>
+        <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;" onclick="markTodayComplete()">Mark Today Complete</button>
+      </div>
+      <div class="routine-grid-wrapper">
+        <table id="routineTable">
+          <thead>
+            <tr id="headerRow">
+              <th class="sticky-col">Routine Task (1–21)</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WhatsApp Share Feed -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">Captured WhatsApp Shares</div>
+      </div>
+      <div class="share-feed" id="shareFeed"></div>
+    </div>
+  </div>
+
+  <script>
+    const TASKS = [
+      "1. Staff Reporting cross check",
+      "2. Field Visits (If Need)",
+      "3. Branch Reporting",
+      "4. Attendance Marking",
+      "5. System Opening",
+      "6. Today Business Planing",
+      "7. Disbursment",
+      "8. GRT & PD",
+      "9. Fresh Arrear Cross check",
+      "10. All Pending mails clearnes",
+      "11. All Other registers and files cross check",
+      "12. HM Cross Check - IGL, IL & MSME (Every 2 hr. gap)",
+      "13. Disb Closing (Try to complete the Disb before 3.00PM)",
+      "14. Collection Deposit (Before 4.00PM)",
+      "15. Demand pending Follow up 3.00PM Onwards",
+      "16. PTP Visit Cross Check",
+      "17. RO wise Survey Cross check",
+      "18. Cash Book Updation",
+      "19. EOD",
+      "20. System Closing before 6.00PM",
+      "21. Cross check all above mentioned points once again"
+    ];
+
+    const TODAY = new Date().getDate() || 12;
+
+    // Load or initialize state from localStorage
+    let routineState = JSON.parse(localStorage.getItem("routineState") || "{}");
+    if (Object.keys(routineState).length === 0) {
+      for (let t = 0; t < 21; t++) {
+        routineState[t] = {};
+        for (let d = 1; d <= 31; d++) {
+          if (d < TODAY && (t + d) % 4 !== 0) routineState[t][d] = true;
+          if (d === TODAY && t < 14) routineState[t][d] = true;
+        }
+      }
+    }
+
+    let shares = JSON.parse(localStorage.getItem("shares") || "null") || [
+      { type: "TEXT", text: "14 RO staff reported on time at 08:45 AM. Attendance marked.", date: "Today, 08:50 AM" },
+      { type: "LINK", text: "https://docs.google.com/spreadsheets/d/branch-hm-check", date: "Today, 11:30 AM" },
+      { type: "IMAGE", text: "content://media/external/images/ptp_field_visit.jpg", date: "Today, 02:15 PM" },
+      { type: "DOCUMENT", text: "Bank_Deposit_Slip_Before_4PM.pdf", date: "Today, 03:45 PM" }
+    ];
+
+    function saveState() {
+      localStorage.setItem("routineState", JSON.stringify(routineState));
+      localStorage.setItem("shares", JSON.stringify(shares));
+      render();
+    }
+
+    function toggleCell(taskIdx, day) {
+      if (!routineState[taskIdx]) routineState[taskIdx] = {};
+      routineState[taskIdx][day] = !routineState[taskIdx][day];
+      saveState();
+    }
+
+    function markTodayComplete() {
+      for (let t = 0; t < 21; t++) {
+        if (!routineState[t]) routineState[t] = {};
+        routineState[t][TODAY] = true;
+      }
+      saveState();
+    }
+
+    function simulateShare() {
+      const types = ["TEXT", "LINK", "IMAGE", "DOCUMENT"];
+      const randomType = types[Math.floor(Math.random() * types.length)];
+      const sampleTexts = {
+        TEXT: "Disbursement update: 9/9 scheduled cases verified before 3:00 PM cutoff.",
+        LINK: "https://branchops.internal/reports/fresh-arrear-crosscheck",
+        IMAGE: "content://com.whatsapp.provider.media/item/cash_book_scan.jpg",
+        DOCUMENT: "RO_wise_survey_report_November.pdf"
+      };
+      shares.unshift({
+        type: randomType,
+        text: sampleTexts[randomType],
+        date: "Just now"
+      });
+      saveState();
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ routineState, shares }));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "branchops_data.json");
+      dlAnchor.click();
+    }
+
+    function render() {
+      // Render Header Row
+      const headerRow = document.getElementById("headerRow");
+      headerRow.innerHTML = '<th class="sticky-col">Routine Task (1–21)</th>';
+      for (let d = 1; d <= 31; d++) {
+        const th = document.createElement("th");
+        th.className = "day-cell";
+        th.innerText = d === TODAY ? `D${d}*` : `D${d}`;
+        if (d === TODAY) th.style.color = "var(--amber-accent)";
+        headerRow.appendChild(th);
+      }
+
+      // Render Table Body
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+      TASKS.forEach((task, tIdx) => {
+        const tr = document.createElement("tr");
+        const tdName = document.createElement("td");
+        tdName.className = "sticky-col";
+        tdName.innerText = task;
+        tr.appendChild(tdName);
+
+        for (let d = 1; d <= 31; d++) {
+          const td = document.createElement("td");
+          td.className = "day-cell";
+          const isChecked = !!(routineState[tIdx] && routineState[tIdx][d]);
+          td.innerHTML = `<div class="check-box ${isChecked ? 'checked' : ''}">${isChecked ? '✓' : ''}</div>`;
+          td.onclick = () => toggleCell(tIdx, d);
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      });
+
+      // Render Bar Chart
+      const chart = document.getElementById("barChart");
+      chart.innerHTML = "";
+      let totalCompletedAllDays = 0;
+      let totalSlots = 31 * 21;
+
+      for (let d = 1; d <= 31; d++) {
+        let completed = 0;
+        for (let t = 0; t < 21; t++) {
+          if (routineState[t] && routineState[t][d]) completed++;
+        }
+        totalCompletedAllDays += completed;
+        const pct = Math.round((completed / 21) * 100);
+
+        const col = document.createElement("div");
+        col.className = "bar-col";
+        col.title = `Day ${d}: ${completed}/21 tasks (${pct}%)`;
+
+        const fill = document.createElement("div");
+        fill.className = "bar-fill";
+        fill.style.height = `${pct}%`;
+        if (pct >= 85) fill.style.background = "var(--emerald-primary)";
+        else if (pct >= 50) fill.style.background = "var(--amber-accent)";
+        else fill.style.background = "var(--cyan-info)";
+
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.innerText = d;
+        if (d === TODAY) label.style.color = "var(--amber-accent)";
+
+        col.appendChild(fill);
+        col.appendChild(label);
+        chart.appendChild(col);
+      }
+
+      // Update KPIs
+      document.getElementById("totalSharesCount").innerText = shares.length;
+      let todayDone = 0;
+      for (let t = 0; t < 21; t++) {
+        if (routineState[t] && routineState[t][TODAY]) todayDone++;
+      }
+      document.getElementById("todayProgress").innerText = `${todayDone} / 21`;
+      document.getElementById("avgCompletion").innerText = `${Math.round((totalCompletedAllDays / (TODAY * 21)) * 100)}%`;
+
+      // Render Shares Feed
+      const feed = document.getElementById("shareFeed");
+      feed.innerHTML = "";
+      shares.forEach(s => {
+        const item = document.createElement("div");
+        item.className = "share-item";
+        item.innerHTML = `
+          <div>
+            <span class="share-type">${s.type}</span>
+            <span>${s.text}</span>
+          </div>
+          <span style="font-size: 11px; color: var(--text-muted);">${s.date}</span>
+        `;
+        feed.appendChild(item);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
